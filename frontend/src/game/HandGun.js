@@ -20,12 +20,14 @@ class HandGun {
         const material = new THREE.MeshStandardMaterial({
             color: 0x00ff00,
             emissive: 0x00ff00,
-            emissiveIntensity: 0.5
+            emissiveIntensity: 0.5,
+            transparent: true,  
+            opacity: 0          
         });
 
         this.gunMesh = new THREE.Mesh(geometry, material);
         this.gunMesh.rotation.x = Math.PI / 2;
-        this.gunMesh.visible = false;
+        this.gunMesh.visible = true; // Keep visible for calculations
         this.scene.add(this.gunMesh);
 
         const flashGeometry = new THREE.SphereGeometry(0.2, 8, 8);
@@ -50,10 +52,11 @@ class HandGun {
         this.isVisible = true;
         this.handPosition = handPos;
 
+       
         const worldPos = this.screenToWorld(handPos.x, handPos.y);
 
         this.gunMesh.position.copy(worldPos);
-        this.gunMesh.visible = false; 
+        this.gunMesh.visible = true; 
         this.gunMesh.lookAt(this.camera.position);
     }
 
@@ -74,7 +77,7 @@ class HandGun {
         vector.project(this.camera);
 
         const x = (vector.x + 1) / 2;
-        const y = (-vector.y + 1) / 2;  
+        const y = (-vector.y + 1) / 2;
 
         return { x, y };
     }
@@ -84,7 +87,7 @@ class HandGun {
 
         const startPos = this.gunMesh.position.clone();
         const vector = new THREE.Vector3(
-            (this.handPosition.x - 0.5) * 2,   
+            (this.handPosition.x - 0.5) * 2,
             -((this.handPosition.y - 0.5) * 2),
             0.5
         );
