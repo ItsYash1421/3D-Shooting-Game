@@ -83,10 +83,10 @@ class Game {
     setupHandTracking() {
         if (!this.handTracker) return;
 
-        this.handTracker.onHandUpdate = (handPos, isFingerGun) => {
+        this.handTracker.onHandUpdate = (handPos, isFingerGun, isThumbDown) => {
             if (this.gameEngine) {
                 this.gameEngine.updateHandPosition(handPos, isFingerGun);
-                this.ui.updateGestureStatus(handPos !== null, isFingerGun);
+                this.ui.updateGestureStatus(handPos !== null, isFingerGun, isThumbDown);
 
                 const gunScreenPos = this.gameEngine.getGunScreenPosition();
                 this.ui.updateCrosshairPosition(gunScreenPos || handPos);

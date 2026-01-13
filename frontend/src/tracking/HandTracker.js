@@ -14,9 +14,9 @@ class HandTracker {
         this.isFingerGun = false;
         this.isShooting = false;
         this.lastShootTime = 0;
-        this.shootCooldown = 300; 
+        this.shootCooldown = 300;
 
-        this.smoothingFactor = 0.9; 
+        this.smoothingFactor = 0.9;
         this.smoothedLandmarks = null;
 
         this.deadzone = 0.005;
@@ -26,7 +26,7 @@ class HandTracker {
         this.ANGLE_THRESHOLD = 2.6;
 
         this.lastDrawTime = 0;
-        this.DRAW_INTERVAL = 1000 / 30; 
+        this.DRAW_INTERVAL = 1000 / 30;
 
         this.onHandUpdate = null;
         this.onShoot = null;
@@ -42,9 +42,9 @@ class HandTracker {
 
             this.hands.setOptions({
                 maxNumHands: 1,
-                modelComplexity: 1,              
-                minDetectionConfidence: 0.8,     
-                minTrackingConfidence: 0.75      
+                modelComplexity: 1,
+                minDetectionConfidence: 0.8,
+                minTrackingConfidence: 0.75
             });
 
             this.hands.onResults(this.onResults.bind(this));
@@ -52,14 +52,14 @@ class HandTracker {
                 onFrame: async () => {
                     await this.hands.send({ image: this.video });
                 },
-                width: 960,   
-                height: 720   
+                width: 960,
+                height: 720
             });
 
             await this.camera.start();
 
-            this.canvas.width = 400;  
-            this.canvas.height = 300; 
+            this.canvas.width = 400;
+            this.canvas.height = 300;
 
             return true;
         } catch (error) {
@@ -112,19 +112,19 @@ class HandTracker {
             let adaptiveDeadzone;
 
             if (velocity > 0.02) {
-                adaptiveSmoothingFactor = 0.5; 
-                adaptiveDeadzone = 0.001;       
+                adaptiveSmoothingFactor = 0.5;
+                adaptiveDeadzone = 0.001;
             } else if (velocity > 0.01) {
                 adaptiveSmoothingFactor = 0.7;
                 adaptiveDeadzone = 0.003;
             } else {
-               
+
                 adaptiveSmoothingFactor = 0.9;
                 adaptiveDeadzone = this.deadzone;
             }
 
             this.smoothedLandmarks = rawLandmarks.map((l, i) => {
-                
+
                 const deltaX = Math.abs(l.x - this.smoothedLandmarks[i].x);
                 const deltaY = Math.abs(l.y - this.smoothedLandmarks[i].y);
                 const deltaZ = Math.abs(l.z - this.smoothedLandmarks[i].z);
@@ -151,7 +151,7 @@ class HandTracker {
         };
 
         if (this.onHandUpdate) {
-            this.onHandUpdate(this.handPosition, this.isFingerGun);
+            this.onHandUpdate(this.handPosition, this.isFingerGun, this.isThumbDown);
         }
     }
 
@@ -231,10 +231,10 @@ class HandTracker {
 
         // Method 1: Angle-based (most reliable)
         const indexAngle = this.calculateAngle(indexTip, indexPIP, indexMCP);
-        const indexExtendedByAngle = indexAngle > 2.4; 
+        const indexExtendedByAngle = indexAngle > 2.4;
 
         // Method 2: Y-position check with relaxed tolerance
-        const indexExtendedByY = (indexPIP.y - indexTip.y) > 0.02; 
+        const indexExtendedByY = (indexPIP.y - indexTip.y) > 0.02;
 
         // Method 3: Check index is higher than middle finger (practical check)
         const indexHigherThanMiddle = indexTip.y < middleTip.y - 0.02;
@@ -242,7 +242,18 @@ class HandTracker {
         // Index is extended if ANY of these methods confirm it
         const indexExtended = indexExtendedByAngle || indexExtendedByY || indexHigherThanMiddle;
 
-        const thumbOkay = true; 
+        // ------------------- THUMB FIRE LOGIC ----------------------------
+        // Thumb Up (Ready): Tip is higher (smaller Y) than IP joint
+        // Thumb Down (Fire): Tip is lower (larger Y) or level with IP joint
+        //------------------------------------------------------------------
+        const thumbTipY = thumbTip.y;
+        const thumbIPY = thumbIP.y;
+
+        const thumbIndexDist = Math.hypot(
+            thumbTip.x - indexMCP.x,
+            thumbTip.y - indexMCP.y
+        );
+        const isThumbDown = thumbIndexDist < 0.15;
 
         const notOpenPalm = !(
             middleTip.y < middlePIP.y - 0.05 &&
@@ -251,15 +262,24 @@ class HandTracker {
 
         const wasFingerGun = this.isFingerGun;
 
-        this.isFingerGun = indexExtended && thumbOkay && notOpenPalm;
+        this.isFingerGun = indexExtended && notOpenPalm;
+        this.isThumbDown = isThumbDown;
 
+        //---------------------------------------
+        // FIRING LOGIC:
+        // 1. Must be aiming 
+        // 2. Thumb must be DOWN 
+       //---------------------------------------
         const now = Date.now();
-        if (this.isFingerGun && !wasFingerGun && now - this.lastShootTime > this.shootCooldown) {
-            this.isShooting = true;
-            this.lastShootTime = now;
 
-            if (this.onShoot) {
-                this.onShoot(this.handPosition);
+        if (this.isFingerGun && isThumbDown) {
+            if (now - this.lastShootTime > this.shootCooldown) {
+                this.isShooting = true;
+                this.lastShootTime = now;
+
+                if (this.onShoot) {
+                    this.onShoot(this.handPosition);
+                }
             }
         } else {
             this.isShooting = false;

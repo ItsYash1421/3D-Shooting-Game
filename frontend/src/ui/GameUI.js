@@ -14,7 +14,7 @@ class GameUI {
         };
 
         this.elements = {
-           
+
             playerNameInput: document.getElementById('player-name'),
             startButton: document.getElementById('start-button'),
             leaderboardButton: document.getElementById('leaderboard-button'),
@@ -44,7 +44,7 @@ class GameUI {
     }
 
     setupEventListeners() {
-       
+
         const filterButtons = document.querySelectorAll('.filter-btn');
         filterButtons.forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -90,15 +90,20 @@ class GameUI {
         this.elements.hitsValue.textContent = hits;
     }
 
-    updateGestureStatus(hasHand, isFingerGun) {
+    updateGestureStatus(hasHand, isFingerGun, isThumbDown) {
         if (!hasHand) {
             this.elements.gestureStatus.textContent = 'AWAITING HAND DETECTION | PRESS SPACE TO SHOOT';
             this.elements.gestureStatus.style.color = '#ff3366';
         } else if (isFingerGun) {
-            this.elements.gestureStatus.textContent = 'WEAPON READY | PRESS SPACE OR CLICK TO FIRE';
-            this.elements.gestureStatus.style.color = '#00ff88';
+            if (isThumbDown) {
+                this.elements.gestureStatus.textContent = 'FIRING! | THUMB DOWN';
+                this.elements.gestureStatus.style.color = '#ff3366'; 
+            } else {
+                this.elements.gestureStatus.textContent = 'WEAPON READY | THUMB UP TO AIM';
+                this.elements.gestureStatus.style.color = '#00ff88'; 
+            }
         } else {
-            this.elements.gestureStatus.textContent = 'POINT INDEX FINGER | PRESS SPACE TO SHOOT';
+            this.elements.gestureStatus.textContent = 'POINT INDEX FINGER | THUMB UP TO AIM';
             this.elements.gestureStatus.style.color = '#ffaa00';
         }
     }
@@ -109,14 +114,14 @@ class GameUI {
         const crosshairParent = this.elements.crosshair.parentElement;
 
         if (!handPos) {
-            return; 
+            return;
         }
         const x = handPos.x * 100;
-        const y = handPos.y * 100;  
+        const y = handPos.y * 100;
 
         crosshairParent.style.left = x + '%';
         crosshairParent.style.top = y + '%';
-        crosshairParent.style.transform = 'translate(-50%, -50%)'; 
+        crosshairParent.style.transform = 'translate(-50%, -50%)';
     }
 
     async showGameOver(stats, coinsSpawned, scoreManager) {

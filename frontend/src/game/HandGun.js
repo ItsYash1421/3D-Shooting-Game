@@ -27,7 +27,7 @@ class HandGun {
 
         this.gunMesh = new THREE.Mesh(geometry, material);
         this.gunMesh.rotation.x = Math.PI / 2;
-        this.gunMesh.visible = true; // Keep visible for calculations
+        this.gunMesh.visible = true; 
         this.scene.add(this.gunMesh);
 
         const flashGeometry = new THREE.SphereGeometry(0.2, 8, 8);
