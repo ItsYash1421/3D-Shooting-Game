@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AR HAND SHOOTER | 3D Shooting Game</title>
+    <link rel="stylesheet" href="/styles/main.css">
+</head>
+
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="screen">
+        <div class="loading-content">
+            <div class="logo-container">
+                <h1 class="loading-title">AR HAND SHOOTER</h1>
+                <div class="loading-warning">LOADING SYSTEMS...</div>
+            </div>
+            <div class="loading-spinner"></div>
+            <p id="loading-text">Initializing game assets...</p>
+        </div>
+    </div>
+
+    <!-- Start Screen -->
+    <div id="start-screen" class="screen hidden">
+        <div class="menu-content">
+            <div class="logo-header">
+                <h1 class="game-title">AR HAND SHOOTER</h1>
+                <div class="title-underline"></div>
+                <p class="game-subtitle">MOTION CONTROLLED SHOOTING EXPERIENCE</p>
+            </div>
+
+            <div class="instructions">
+                <h2 class="section-title">MISSION BRIEFING</h2>
+                <div class="instruction-list">
+                    <div class="instruction-item">
+                        <span class="step-number">01</span>
+                        <span class="step-text">Allow camera access for hand tracking</span>
+                    </div>
+                    <div class="instruction-item">
+                        <span class="step-number">02</span>
+                        <span class="step-text">Point with index finger to aim</span>
+                    </div>
+                    <div class="instruction-item">
+                        <span class="step-number">03</span>
+                        <span class="step-text">Press SPACEBAR or CLICK to shoot</span>
+                    </div>
+                    <div class="instruction-item">
+                        <span class="step-number">04</span>
+                        <span class="step-text">Hit targets before time runs out (90 seconds)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="player-input">
+                <label class="input-label">OPERATOR NAME</label>
+                <input type="text" id="player-name" placeholder="ENTER CALLSIGN" maxlength="20" value="Player1">
+            </div>
+
+            <button id="start-button" class="game-button primary">DEPLOY</button>
+            <button id="leaderboard-button" class="game-button secondary">RANKINGS</button>
+        </div>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="game-screen" class="screen hidden">
+        <!-- Video for hand tracking (hidden) -->
+        <video id="video" class="input-video" autoplay playsinline></video>
+
+        <!-- Canvas for hand tracking visualization -->
+        <canvas id="hand-canvas" class="hand-canvas"></canvas>
+
+        <!-- Three.js WebGL Canvas -->
+        <canvas id="game-canvas"></canvas>
+
+        <!-- Game HUD -->
+        <div id="game-hud" class="hud">
+            <div class="hud-top">
+                <div class="hud-item">
+                    <span class="hud-label">SCORE</span>
+                    <span id="score-value" class="hud-value">0</span>
+                </div>
+                <div class="hud-item">
+                    <span class="hud-label">TIME</span>
+                    <span id="timer-value" class="hud-value">90</span>
+                </div>
+                <div class="hud-item">
+                    <span class="hud-label">HITS</span>
+                    <span id="hits-value" class="hud-value">0</span>
+                </div>
+            </div>
+
+            <div class="hud-center">
+                <div id="crosshair" class="crosshair"></div>
+            </div>
+
+            <div class="hud-bottom">
+                <div class="gesture-indicator">
+                    <span id="gesture-status">AWAITING HAND DETECTION</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="gameover-screen" class="screen hidden">
+        <div class="menu-content">
+            <div class="logo-header">
+                <h1 class="game-title">MISSION COMPLETE</h1>
+                <div class="title-underline"></div>
+            </div>
+
+            <div class="stats-container">
+                <div class="stat-item">
+                    <span class="stat-label">FINAL SCORE</span>
+                    <span id="final-score" class="stat-value">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">TOTAL HITS</span>
+                    <span id="final-hits" class="stat-value">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">ACCURACY</span>
+                    <span id="final-accuracy" class="stat-value">0%</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">ROUND</span>
+                    <span id="final-round" class="stat-value">1</span>
+                </div>
+            </div>
+
+            <div id="save-status" class="save-status"></div>
+
+            <div class="button-group">
+                <button id="play-again-button" class="game-button primary">REDEPLOY</button>
+                <button id="menu-button" class="game-button secondary">EXTRACT</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaderboard Screen -->
+    <div id="leaderboard-screen" class="screen hidden">
+        <div class="menu-content">
+            <h1 class="game-title">🏆 LEADERBOARD</h1>
+
+            <div class="leaderboard-filters">
+                <button class="filter-btn active" data-timeframe="all">All Time</button>
+                <button class="filter-btn" data-timeframe="today">Today</button>
+                <button class="filter-btn" data-timeframe="week">This Week</button>
+                <button class="filter-btn" data-timeframe="month">This Month</button>
+            </div>
+
+            <div id="leaderboard-list" class="leaderboard-list">
+                <div class="loading-spinner"></div>
+            </div>
+
+            <button id="back-button" class="game-button secondary">BACK</button>
+        </div>
+    </div>
+
+    <!-- Mobile Warning (Desktop Only Game) -->
+    <div class="mobile-warning">
+        <div class="mobile-warning-icon">⚠</div>
+        <h1>DESKTOP REQUIRED</h1>
+        <p>This game requires a desktop or laptop with a webcam for hand tracking. Mobile devices are not supported.</p>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+</body>
+
+</html>
